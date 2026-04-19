@@ -26,12 +26,17 @@ public class LoginController {
             return;
         }
 
-        var user = SessionManager.authenticate(username, password);
-        if (user != null) {
-            SessionManager.setCurrentUser(user);
-            navigateToDashboard(user.isAdmin());
-        } else {
-            showError("Identifiants incorrects");
+        try {
+            var user = SessionManager.authenticate(username, password);
+            if (user != null) {
+                SessionManager.setCurrentUser(user);
+                navigateToDashboard(user.isAdmin());
+            } else {
+                showError("Identifiants incorrects ou connexion BD échouée");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Erreur BD: " + e.getMessage());
         }
     }
 

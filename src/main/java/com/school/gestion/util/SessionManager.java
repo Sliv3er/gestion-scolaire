@@ -49,7 +49,7 @@ public class SessionManager {
         Platform.exit();
     }
 
-    public static Utilisateur authenticate(String username, String password) {
+    public static Utilisateur authenticate(String username, String password) throws Exception {
         String query = "SELECT * FROM UTILISATEUR WHERE username = ? AND estActif = 1";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -66,10 +66,15 @@ public class SessionManager {
                     user.setIdPersonne(rs.getInt("idPersonne"));
                     user.setEstActif(rs.getBoolean("estActif"));
                     return user;
+                } else {
+                    System.out.println("Password mismatch!");
                 }
+            } else {
+                System.out.println("User not found!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new Exception("Erreur de connexion à la base de données: " + e.getMessage());
         }
         return null;
     }
