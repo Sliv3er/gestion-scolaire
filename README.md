@@ -42,54 +42,40 @@ src/
 ## Prérequis
 
 - **Java 17+**
+- **IDE**: Eclipse (recommandé) ou IntelliJ IDEA
 - **Maven 3.8+**
-- **SQL Server 2019+** (ou Azure SQL Database)
+- **Base de données**: XAMPP (MySQL / MariaDB) ou SQL Server
 - **JavaFX 21**
 
-## Installation
+## Installation (Eclipse & XAMPP)
 
-### 1. Configuration de la Base de Données
+### 1. Importer le projet dans Eclipse
+1. Ouvrez Eclipse et allez dans **File > Import...**
+2. Sélectionnez **Maven > Existing Maven Projects** et cliquez sur Next.
+3. Parcourez votre système pour sélectionner le dossier `projet federee` (où se trouve le fichier `pom.xml`).
+4. Cliquez sur **Finish**. Eclipse va télécharger toutes les dépendances automatiquement.
 
-Exécutez le script SQL dans SQL Server Management Studio ou Azure Data Studio:
+### 2. Configuration de la Base de Données (XAMPP)
 
-```sql
--- Créez d'abord la base de données
-CREATE DATABASE GestionScolaire;
-GO
+1. Ouvrez **XAMPP Control Panel** et démarrez le module **MySQL** (et Apache si vous utilisez phpMyAdmin).
+2. Ouvrez phpMyAdmin (http://localhost/phpmyadmin) ou votre client SQL préféré.
+3. Créez une nouvelle base de données nommée `gestion_scolaire`.
+4. Importez le fichier **`src/sql/schema_mysql.sql`** dans cette nouvelle base de données.
+   - *Note: Ce script contient toutes les tables, triggers de capacité et les données de test.*
 
--- Exécutez le contenu de src/sql/schema.sql
-```
+### 3. Exécution du Projet dans Eclipse
 
-### 2. Configuration des Variables d'Environnement
+1. Faites un clic droit sur le fichier **`MainApp.java`** (`src/main/java/com/school/gestion/MainApp.java`).
+2. Sélectionnez **Run As > Java Application**.
+   - *Le projet est préconfiguré pour se connecter à `jdbc:mysql://localhost:3306/gestion_scolaire` avec l'utilisateur `root` et sans mot de passe (configuration XAMPP par défaut).*
 
-```bash
-# Windows
-set GESTION_DB_URL=jdbc:sqlserver://localhost:1433;databaseName=GestionScolaire;encrypt=true;trustServerCertificate=true
-set GESTION_DB_USER=sa
-set GESTION_DB_PASSWORD=votre_mot_de_passe
+---
 
-# Linux/Mac
-export GESTION_DB_URL=jdbc:sqlserver://localhost:1433;databaseName=GestionScolaire;encrypt=true;trustServerCertificate=true
-export GESTION_DB_USER=sa
-export GESTION_DB_PASSWORD=votre_mot_de_passe
-```
+## Configuration Alternative (SQL Server)
 
-### 3. Compilation et Exécution
-
-```bash
-# Compiler le projet
-mvn clean compile
-
-# Exécuter l'application
-mvn javafx:run
-```
-
-### 4. Construction du JAR
-
-```bash
-mvn clean package
-java -jar target/gestion-scolaire-1.0.0.jar
-```
+Si vous préférez utiliser SQL Server au lieu de XAMPP :
+1. Importez le fichier `src/sql/schema.sql` dans SQL Server.
+2. Modifiez les variables d'environnement ou le fichier `DatabaseConnection.java` pour utiliser le driver MSSQL.
 
 ## Connexion par Défaut
 
