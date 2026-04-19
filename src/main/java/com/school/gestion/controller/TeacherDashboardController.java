@@ -55,9 +55,9 @@ public class TeacherDashboardController {
 
         HBox statsRow = new HBox(20);
         statsRow.getChildren().addAll(
-            createStatCard("Mes Classes", "3", "#00bcd4"),
-            createStatCard("Mes Matières", "2", "#4caf50"),
-            createStatCard("Total Élèves", "45", "#ff9800")
+            createStatCard("🏫  Mes Classes", "3", "#4361ee"),
+            createStatCard("📚  Mes Matières", "2", "#10b981"),
+            createStatCard("🎓  Total Élèves", "45", "#f59e0b")
         );
 
         contentArea.getChildren().addAll(welcomeBox, statsRow);

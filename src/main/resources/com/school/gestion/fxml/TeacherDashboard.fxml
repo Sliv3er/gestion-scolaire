@@ -9,16 +9,16 @@
       fx:controller="com.school.gestion.controller.TeacherDashboardController"
       styleClass="main-container">
 
-    <VBox styleClass="sidebar" prefWidth="220">
+    <VBox styleClass="sidebar" prefWidth="250">
         <Label text="GESTION SCOLAIRE" styleClass="sidebar-label"/>
 
-        <VBox spacing="2" VBox.vgrow="ALWAYS">
-            <Button text="Tableau de bord" styleClass="nav-button" onAction="#navigateToDashboard"/>
-            <Button text="Saisie des notes" styleClass="nav-button" onAction="#navigateToNotes"/>
-            <Button text="Mes élèves" styleClass="nav-button" onAction="#navigateToMesEleves"/>
+        <VBox spacing="5" VBox.vgrow="ALWAYS">
+            <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#navigateToDashboard" maxWidth="Infinity"/>
+            <Button text="✍️  Saisie des notes" styleClass="nav-button" onAction="#navigateToNotes" maxWidth="Infinity"/>
+            <Button text="👥  Mes élèves" styleClass="nav-button" onAction="#navigateToMesEleves" maxWidth="Infinity"/>
         </VBox>
 
-        <Button text="Déconnexion" styleClass="nav-button" onAction="#handleLogout"/>
+        <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity" style="-fx-padding: 20;"/>
     </VBox>
 
     <VBox HBox.hgrow="ALWAYS">

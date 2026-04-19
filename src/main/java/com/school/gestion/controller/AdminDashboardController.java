@@ -98,9 +98,9 @@ public class AdminDashboardController {
         for (Enseignant ens : SchoolService.getAllEnseignants()) enseignantsCount.setText(String.valueOf(Integer.parseInt(enseignantsCount.getText()) + 1));
 
         statsRow.getChildren().addAll(
-            createStatCard("Total Élèves", elevesCount.getText(), "#00bcd4"),
-            createStatCard("Total Classes", classesCount.getText(), "#4caf50"),
-            createStatCard("Total Enseignants", enseignantsCount.getText(), "#ff9800")
+            createStatCard("🎓  Total Élèves", elevesCount.getText(), "#4361ee"),
+            createStatCard("🏫  Total Classes", classesCount.getText(), "#10b981"),
+            createStatCard("👨‍🏫  Total Enseignants", enseignantsCount.getText(), "#f59e0b")
         );
 
         VBox welcomeBox = new VBox(10);
