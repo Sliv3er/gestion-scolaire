@@ -214,4 +214,4 @@ INSERT INTO ANNEE_SCOLAIRE (annee, dateDebut, dateFin, estActive) VALUES
 
 -- Default Admin user (password: admin123)
 INSERT INTO UTILISATEUR (username, password, role, idPersonne, estActif) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhVu', 'ADMIN', 0, 1);
+('admin', '$2a$10$Twcbwh9rL5/TlfKe4M6nTuECKHdN9o94RXd/kWDpvDFLzuVhl1B3C', 'ADMIN', 0, 1);
