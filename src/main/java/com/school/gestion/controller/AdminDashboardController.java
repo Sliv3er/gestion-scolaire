@@ -145,7 +145,7 @@ public class AdminDashboardController {
             createColumn("Sexe", "sexe", 50),
             createColumn("Niveau", "niveau", 100)
         );
-        table.setItems(new javafx.collections.FXCollectionsObservableList(SchoolService.getAllEleves()));
+        table.setItems(javafx.collections.FXCollections.observableArrayList(SchoolService.getAllEleves()));
 
         addBtn.setOnAction(e -> showAddEleveDialog());
         box.getChildren().addAll(topBar, table);
@@ -167,7 +167,7 @@ public class AdminDashboardController {
             createColumn("Grade", "grade", 150),
             createColumn("Téléphone", "telephone", 120)
         );
-        table.setItems(new javafx.collections.FXCollectionsObservableList(SchoolService.getAllEnseignants()));
+        table.setItems(javafx.collections.FXCollections.observableArrayList(SchoolService.getAllEnseignants()));
         box.getChildren().addAll(topBar, table);
         contentArea.getChildren().setAll(box);
     }
@@ -233,7 +233,7 @@ public class AdminDashboardController {
             createColumn("Libellé", "libelle", 250),
             createColumn("Coefficient", "coefficient", 100)
         );
-        table.setItems(new javafx.collections.FXCollectionsObservableList(SchoolService.getAllMatieres()));
+        table.setItems(javafx.collections.FXCollections.observableArrayList(SchoolService.getAllMatieres()));
         box.getChildren().addAll(table);
         contentArea.getChildren().setAll(box);
     }
@@ -283,7 +283,7 @@ public class AdminDashboardController {
                 selectedClasseId.setText(String.valueOf(classeCombo.getValue().getIdClasse()));
                 String niveau = niveauCombo.getValue();
                 int idAnnee = SchoolService.getActiveAnneeScolaire().getIdAnnee();
-                leftTable.setItems(new javafx.collections.FXCollectionsObservableList(
+                leftTable.setItems(javafx.collections.FXCollections.observableArrayList(
                     SchoolService.getElevesNonInscrits(idAnnee, niveau)));
 
                 classGrid.getChildren().clear();

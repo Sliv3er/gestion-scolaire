@@ -282,7 +282,7 @@ public class TeacherDashboardController {
                         }
                     } catch (Exception ex) { ex.printStackTrace(); }
                 }
-                table.setItems(new javafx.collections.FXCollectionsObservableList(eleves));
+                table.setItems(javafx.collections.FXCollections.observableArrayList(eleves));
             }
         });
 
