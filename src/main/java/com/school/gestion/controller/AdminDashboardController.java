@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.school.gestion.database.DatabaseConnection;
 import javafx.collections.FXCollections;
+import javafx.scene.control.cell.TextFieldTableCell;
 
 public class AdminDashboardController {
 
