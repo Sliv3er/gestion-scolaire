@@ -488,13 +488,19 @@ TableView<NoteEntry> table = new TableView<>();
         
         TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
         devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
+        deberCol.setOnEditCommit(event -> {
+            event.getRowValue().setDevoir(event.getNewValue());
+        });
         devoirCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         
         TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
         examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
+        examCol.setOnEditCommit(event -> {
+            event.getRowValue().setExam(event.getNewValue());
+        });
         examCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         
-        table.getColumns().addAll(elevCol, devoirCol, examCol);
+        table.getColumns().addAll(elevCol, deberCol, examCol);
         table.setEditable(true);
 
         Button saveBtn = new Button("Enregistrer les notes");
@@ -577,6 +583,7 @@ TableView<NoteEntry> table = new TableView<>();
 
         int saved = 0;
         for (NoteEntry entry : table.getItems()) {
+            System.out.println("Saving for: " + entry.getMatricule() + " - Devoir: " + entry.getDevoir() + " - Exam: " + entry.getExam());
             if (entry.getMatricule() == null || entry.getMatricule().isEmpty()) continue;
             
             Note note = new Note();
@@ -586,9 +593,11 @@ TableView<NoteEntry> table = new TableView<>();
             note.setCodeMatiere(matiereCombo.getValue().getCode());
             note.setTrimestre(trimestreCombo.getValue());
             note.setMatriculeEnseignant(SessionManager.getCurrentUser().getUsername());
-            note.setNoteDevoir(entry.getDevoir());
-            note.setNoteExamens(entry.getExam());
-            if (SchoolService.saveNote(note)) saved++;
+            note.setNoteDevoir(entry.getDevoir() != null ? entry.getDevoir() : 0.0);
+            note.setNoteExamens(entry.getExam() != null ? entry.getExam() : 0.0);
+            boolean result = SchoolService.saveNote(note);
+            System.out.println("Save result: " + result);
+            if (result) saved++;
         }
         AlertUtils.showInfo("Succès", saved + " note(s) enregistrée(s)");
     }
