@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.school.gestion.database.DatabaseConnection;
 import javafx.collections.FXCollections;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class AdminDashboardController {
@@ -622,11 +623,19 @@ devoirCol.setOnEditCommit(event -> {
         Button generateBtn = new Button("Générer les bulletins");
         generateBtn.getStyleClass().add("btn");
 
-        niveauCombo.setOnAction(e -> {
+niveauCombo.setOnAction(e -> {
             if (niveauCombo.getValue() != null) {
                 classeCombo.getItems().clear();
                 classeCombo.getItems().addAll(SchoolService.getClassesByNiveau(niveauCombo.getValue()));
             }
+        });
+
+        generateBtn.setOnAction(e -> {
+            if (classeCombo.getValue() == null || trimestreCombo.getValue() == null) {
+                AlertUtils.showError("Erreur", "Veuillez sélectionner une classe et un trimestre");
+                return;
+            }
+            loadBulletins(box, classeCombo.getValue(), trimestreCombo.getValue());
         });
 
         topBar.getChildren().addAll(
@@ -638,6 +647,71 @@ devoirCol.setOnEditCommit(event -> {
 
         box.getChildren().addAll(topBar);
         contentArea.getChildren().setAll(box);
+    }
+
+    private void loadBulletins(VBox box, Classe classe, int trimestre) {
+        VBox bulletinsBox = new VBox(15);
+        
+        List<Eleve> eleves = SchoolService.getElevesByClasse(classe.getIdClasse());
+        List<Note> notes = SchoolService.getNotesByClasseAndTrimestre(classe.getIdClasse(), trimestre);
+        
+        if (eleves.isEmpty()) {
+            AlertUtils.showError("Erreur", "Aucun élève dans cette classe");
+            return;
+        }
+        
+        TableView<Eleve> table = new TableView<>();
+        TableColumn<Eleve, String> nomCol = new TableColumn<>("Élève");
+        nomCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNom() + " " + data.getValue().getPrenom()));
+        
+        List<String> matieres = notes.stream().map(Note::getCodeMatiere).distinct().toList();
+        
+        for (String matiere : matieres) {
+            TableColumn<Eleve, String> col = new TableColumn<>(matiere);
+            final String m = matiere;
+            col.setCellValueFactory(data -> {
+                String matricule = data.getValue().getMatricule();
+                return notes.stream()
+                    .filter(n -> n.getMatricule().equals(matricule) && n.getCodeMatiere().equals(m))
+                    .findFirst()
+                    .map(n -> {
+                        double devoir = n.getNoteDevoir() != null ? n.getNoteDevoir() : 0;
+                        double exam = n.getNoteExamens() != null ? n.getNoteExamens() : 0;
+                        return String.format("D: %.1f | E: %.1f", devoir, exam);
+                    })
+                    .map(SimpleStringProperty::new)
+                    .orElse(new SimpleStringProperty("-"));
+            });
+            table.getColumns().add(col);
+        }
+        
+        TableColumn<Eleve, String> moyenneCol = new TableColumn<>("Moyenne");
+        moyenneCol.setCellValueFactory(data -> {
+            String matricule = data.getValue().getMatricule();
+            List<Note> elevesNotes = notes.stream()
+                .filter(n -> n.getMatricule().equals(matricule))
+                .toList();
+            if (elevesNotes.isEmpty()) {
+                return new SimpleStringProperty("-");
+            }
+            double sum = 0;
+            int count = 0;
+            for (Note n : elevesNotes) {
+                double d = n.getNoteDevoir() != null ? n.getNoteDevoir() : 0;
+                double ex = n.getNoteExamens() != null ? n.getNoteExamens() : 0;
+                sum += (d + ex) / 2;
+                count++;
+            }
+            double avg = count > 0 ? sum / count : 0;
+            return new SimpleStringProperty(String.format("%.2f", avg));
+        });
+        
+        table.getColumns().add(nomCol);
+        table.getColumns().add(moyenneCol);
+        table.setItems(FXCollections.observableArrayList(eleves));
+        
+        bulletinsBox.getChildren().addAll(box.getChildren().get(0), table);
+        contentArea.getChildren().setAll(bulletinsBox);
     }
 
     private <T> TableColumn<T, ?> createColumn(String title, String property, double width) {

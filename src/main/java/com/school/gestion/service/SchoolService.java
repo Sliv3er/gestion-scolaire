@@ -383,4 +383,49 @@ public static boolean saveNote(Note note) {
         n.setMatriculeEnseignant(rs.getString("matriculeEnseignant"));
         return n;
     }
+
+    public static List<Note> getNotesByClasseAndTrimestre(int idClasse, int trimestre) {
+        List<Note> notes = new ArrayList<>();
+        AnneeScolaire annee = getActiveAnneeScolaire();
+        if (annee == null) return notes;
+        
+        String query = "SELECT * FROM note WHERE idClasse = ? AND trimestre = ? AND idAnnee = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idClasse);
+            stmt.setInt(2, trimestre);
+            stmt.setInt(3, annee.getIdAnnee());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    notes.add(extractNote(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return notes;
+    }
+
+    public static List<Eleve> getElevesByClasse(int idClasse) {
+        List<Eleve> eleves = new ArrayList<>();
+        AnneeScolaire annee = getActiveAnneeScolaire();
+        if (annee == null) return eleves;
+        
+        String query = "SELECT e.* FROM eleve e " +
+                       "JOIN inscription i ON e.matricule = i.matricule " +
+                       "WHERE i.idClasse = ? AND i.idAnnee = ? AND i.statut = 'ACTIF'";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idClasse);
+            stmt.setInt(2, annee.getIdAnnee());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    eleves.add(extractEleve(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return eleves;
+    }
 }
