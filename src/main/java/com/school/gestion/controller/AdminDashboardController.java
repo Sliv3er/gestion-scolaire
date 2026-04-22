@@ -482,19 +482,19 @@ public class AdminDashboardController {
         trimestreCombo.getItems().addAll(1, 2, 3);
         trimestreCombo.setPromptText("Trimestre");
 
-        TableView<NoteEntry> table = new TableView<>();
+TableView<NoteEntry> table = new TableView<>();
         TableColumn<NoteEntry, String> elevCol = new TableColumn<>("Élève");
         elevCol.setCellValueFactory(data -> data.getValue().nomProperty());
+        
         TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
         devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
         devoirCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
+        
         TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
         examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
         examCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
-        TableColumn<NoteEntry, Double> compCol = new TableColumn<>("Note Composition");
-        compCol.setCellValueFactory(data -> data.getValue().compProperty().asObject());
-        compCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
-        table.getColumns().addAll(elevCol, devoirCol, examCol, compCol);
+        
+        table.getColumns().addAll(elevCol, devoirCol, examCol);
         table.setEditable(true);
 
         Button saveBtn = new Button("Enregistrer les notes");
@@ -574,12 +574,15 @@ public class AdminDashboardController {
 
         int saved = 0;
         for (NoteEntry entry : table.getItems()) {
-            Note note = new Note(entry.getMatricule(), annee.getIdAnnee(), classeCombo.getValue().getIdClasse(),
-                                matiereCombo.getValue().getCode(), trimestreCombo.getValue());
+            Note note = new Note();
+            note.setMatricule(entry.getMatricule());
+            note.setIdAnnee(annee.getIdAnnee());
+            note.setIdClasse(classeCombo.getValue().getIdClasse());
+            note.setCodeMatiere(matiereCombo.getValue().getCode());
+            note.setTrimestre(trimestreCombo.getValue());
             note.setMatriculeEnseignant(SessionManager.getCurrentUser().getUsername());
             note.setNoteDevoir(entry.getDevoir());
             note.setNoteExamens(entry.getExam());
-            note.setNoteComposition(entry.getComp());
             if (SchoolService.saveNote(note)) saved++;
         }
         AlertUtils.showInfo("Succès", saved + " note(s) enregistrée(s)");
@@ -602,6 +605,13 @@ public class AdminDashboardController {
 
         Button generateBtn = new Button("Générer les bulletins");
         generateBtn.getStyleClass().add("btn");
+
+        niveauCombo.setOnAction(e -> {
+            if (niveauCombo.getValue() != null) {
+                classeCombo.getItems().clear();
+                classeCombo.getItems().addAll(SchoolService.getClassesByNiveau(niveauCombo.getValue()));
+            }
+        });
 
         topBar.getChildren().addAll(
             new Label("Niveau:"), niveauCombo,
