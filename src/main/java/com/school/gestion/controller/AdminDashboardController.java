@@ -179,10 +179,15 @@ public class AdminDashboardController {
         ComboBox<String> niveauCombo = new ComboBox<>();
         niveauCombo.getItems().addAll(SchoolService.getAllNiveaux());
         niveauCombo.setPromptText("Sélectionner un niveau");
-        Button addBtn = new Button("Ajouter une classe");
-        addBtn.getStyleClass().add("btn");
-        addBtn.setOnAction(e -> showAddClasseDialog(niveauCombo.getValue()));
-        topBar.getChildren().addAll(new Label("Niveau:"), niveauCombo, addBtn);
+        Button addClasseBtn = new Button("Ajouter une classe");
+        addClasseBtn.getStyleClass().add("btn");
+        addClasseBtn.setOnAction(e -> showAddClasseDialog(niveauCombo.getValue()));
+
+        Button addNiveauBtn = new Button("+ Nouveau Niveau");
+        addNiveauBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 12px;");
+        addNiveauBtn.setOnAction(e -> showAddNiveauDialog());
+
+        topBar.getChildren().addAll(new Label("Niveau:"), niveauCombo, addClasseBtn, addNiveauBtn);
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
@@ -253,6 +258,39 @@ public class AdminDashboardController {
         });
     }
 
+    private void showAddNiveauDialog() {
+        Dialog<String[]> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter un niveau");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        TextField libelle = new TextField();
+        TextField libelleCourt = new TextField();
+
+        grid.add(new Label("Libellé (ex: 1ère Année):"), 0, 0); grid.add(libelle, 1, 0);
+        grid.add(new Label("Abrégé (ex: 1A):"), 0, 1); grid.add(libelleCourt, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(bt -> {
+            if (bt == ButtonType.OK) {
+                return new String[]{libelle.getText(), libelleCourt.getText()};
+            }
+            return null;
+        });
+
+        var result = dialog.showAndWait();
+        result.ifPresent(data -> {
+            if (SchoolService.saveNiveau(data[0], data[1])) {
+                AlertUtils.showInfo("Succès", "Niveau ajouté avec succès");
+                navigateToClasses();
+            } else {
+                AlertUtils.showError("Erreur", "Impossible d'ajouter le niveau");
+            }
+        });
+    }
+
     private VBox createClasseCard(Classe classe) {
         VBox card = new VBox(10);
         card.getStyleClass().add("card");
@@ -276,6 +314,12 @@ public class AdminDashboardController {
 
     private void showMatieresView() {
         VBox box = new VBox(15);
+        HBox topBar = new HBox(10);
+        Button addBtn = new Button("Ajouter une matière");
+        addBtn.getStyleClass().add("btn");
+        addBtn.setOnAction(e -> showAddMatiereDialog());
+        topBar.getChildren().addAll(addBtn);
+
         TableView<Matiere> table = new TableView<>();
         table.getColumns().addAll(
             createColumn("Code", "code", 80),
@@ -283,8 +327,52 @@ public class AdminDashboardController {
             createColumn("Coefficient", "coefficient", 100)
         );
         table.setItems(javafx.collections.FXCollections.observableArrayList(SchoolService.getAllMatieres()));
-        box.getChildren().addAll(table);
+        box.getChildren().addAll(topBar, table);
         contentArea.getChildren().setAll(box);
+    }
+
+    private void showAddMatiereDialog() {
+        Dialog<Matiere> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter une matière");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        TextField code = new TextField();
+        TextField libelle = new TextField();
+        TextField coefficient = new TextField();
+        coefficient.setText("1.0");
+
+        grid.add(new Label("Code:"), 0, 0); grid.add(code, 1, 0);
+        grid.add(new Label("Libellé:"), 0, 1); grid.add(libelle, 1, 1);
+        grid.add(new Label("Coefficient:"), 0, 2); grid.add(coefficient, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(bt -> {
+            if (bt == ButtonType.OK) {
+                Matiere m = new Matiere();
+                m.setCode(code.getText().toUpperCase());
+                m.setLibelle(libelle.getText());
+                try {
+                    m.setCoefficient(Double.parseDouble(coefficient.getText()));
+                } catch (NumberFormatException ex) {
+                    m.setCoefficient(1.0);
+                }
+                return m;
+            }
+            return null;
+        });
+
+        var result = dialog.showAndWait();
+        result.ifPresent(matiere -> {
+            if (SchoolService.saveMatiere(matiere)) {
+                AlertUtils.showInfo("Succès", "Matière ajoutée avec succès");
+                navigateToMatieres();
+            } else {
+                AlertUtils.showError("Erreur", "Impossible d'ajouter la matière");
+            }
+        });
     }
 
     private void showInscriptionsView() {

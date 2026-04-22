@@ -35,4 +35,7 @@ public class Classe {
 
     public double getRemplissage() { return (double) effectifActuel / capacite; }
     public boolean isFull() { return effectifActuel >= capacite; }
+
+    @Override
+    public String toString() { return getNomComplet(); }
 }

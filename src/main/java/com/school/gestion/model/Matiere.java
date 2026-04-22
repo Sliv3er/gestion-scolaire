@@ -17,7 +17,7 @@ public class Matiere {
     public void setCode(String code) { this.code = code; }
     public String getLibelle() { return libelle; }
     public void setLibelle(String libelle) { this.libelle = libelle; }
-    public double getCoefficient() { return coefficient; }
+public double getCoefficient() { return coefficient; }
     public void setCoefficient(double coefficient) { this.coefficient = coefficient; }
 
     @Override

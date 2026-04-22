@@ -206,6 +206,20 @@ public class SchoolService {
         return matieres;
     }
 
+    public static boolean saveMatiere(Matiere matiere) {
+        String query = "INSERT INTO MATIERE (code, libelle, coefficient) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, matiere.getCode());
+            stmt.setString(2, matiere.getLibelle());
+            stmt.setDouble(3, matiere.getCoefficient());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static List<String> getAllNiveaux() {
         List<String> niveaux = new ArrayList<>();
         String query = "SELECT libelle FROM NIVEAU ORDER BY libelle";
@@ -219,6 +233,19 @@ public class SchoolService {
             e.printStackTrace();
         }
         return niveaux;
+    }
+
+    public static boolean saveNiveau(String libelle, String libelleCourt) {
+        String query = "INSERT INTO NIVEAU (libelle, libelleCourt) VALUES (?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, libelle);
+            stmt.setString(2, libelleCourt);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static AnneeScolaire getActiveAnneeScolaire() {
