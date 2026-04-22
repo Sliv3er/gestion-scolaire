@@ -186,13 +186,13 @@ INSERT INTO NIVEAU (libelle, libelleCourt) VALUES
 ('2ème Année', '2A'),
 ('3ème Année', '3A');
 
-INSERT INTO MATIERE (code, libelle, coefficient) VALUES
-(' MATH', 'Mathématiques', 4.00),
-(' PHY', 'Physique', 3.00),
-(' FR', 'Français', 3.50),
-(' HG', 'Histoire-Géographie', 2.00),
-(' SVT', 'Sciences Naturelles', 2.50),
-(' ANG', 'Anglais', 2.00);
+-- INSERT INTO MATIERE (code, libelle, coefficient) VALUES
+-- ('MATH', 'Mathématiques', 4.00),
+-- ('PHY', 'Physique', 3.00),
+-- ('FR', 'Français', 3.50),
+-- ('HG', 'Histoire-Géographie', 2.00),
+-- ('SVT', 'Sciences Naturelles', 2.50),
+-- ('ANG', 'Anglais', 2.00);
 
 INSERT INTO ANNEE_SCOLAIRE (annee, dateDebut, dateFin, estActive) VALUES
 ('2025-2026', '2025-10-01', '2026-06-30', 1);

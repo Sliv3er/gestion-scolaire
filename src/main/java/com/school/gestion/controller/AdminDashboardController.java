@@ -466,6 +466,7 @@ public class AdminDashboardController {
         classeCombo.setPromptText("Classe");
 
         ComboBox<Matiere> matiereCombo = new ComboBox<>();
+        matiereCombo.getItems().addAll(SchoolService.getAllMatieres());
         matiereCombo.setPromptText("Matière");
 
         ComboBox<Integer> trimestreCombo = new ComboBox<>();
