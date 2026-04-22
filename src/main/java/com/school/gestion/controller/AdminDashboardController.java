@@ -195,7 +195,7 @@ public class AdminDashboardController {
 
         niveauCombo.setOnAction(e -> {
             if (niveauCombo.getValue() != null) {
-                addBtn.setOnAction(ev -> showAddClasseDialog(niveauCombo.getValue()));
+                addClasseBtn.setOnAction(ev -> showAddClasseDialog(niveauCombo.getValue()));
                 List<Classe> classes = SchoolService.getClassesByNiveau(niveauCombo.getValue());
                 grid.getChildren().clear();
                 int col = 0, row = 0;
