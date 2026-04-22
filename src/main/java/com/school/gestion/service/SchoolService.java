@@ -94,6 +94,23 @@ public class SchoolService {
         return enseignants;
     }
 
+    public static String getEnseignantMatriculeByClasseAndMatiere(int idClasse, String codeMatiere) {
+        String query = "SELECT matriculeEnseignant FROM CLASSE_ENSEIGNANT WHERE idClasse = ? AND codeMatiere = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idClasse);
+            stmt.setString(2, codeMatiere);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("matriculeEnseignant");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static boolean saveEnseignant(Enseignant enseignant) {
         String query = "INSERT INTO ENSEIGNANT (matricule, nom, prenom, dateNaissance, sexe, adresse, telephone, grade) " +
                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

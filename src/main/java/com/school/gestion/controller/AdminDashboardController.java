@@ -592,7 +592,9 @@ devoirCol.setOnEditCommit(event -> {
             note.setIdClasse(classeCombo.getValue().getIdClasse());
             note.setCodeMatiere(matiereCombo.getValue().getCode());
             note.setTrimestre(trimestreCombo.getValue());
-            note.setMatriculeEnseignant(SessionManager.getCurrentUser().getUsername());
+            String matriculeEnseignant = SchoolService.getEnseignantMatriculeByClasseAndMatiere(
+                classeCombo.getValue().getIdClasse(), matiereCombo.getValue().getCode());
+            note.setMatriculeEnseignant(matriculeEnseignant);
             note.setNoteDevoir(entry.getDevoir() != null ? entry.getDevoir() : 0.0);
             note.setNoteExamens(entry.getExam() != null ? entry.getExam() : 0.0);
             boolean result = SchoolService.saveNote(note);
