@@ -485,7 +485,7 @@ public class AdminDashboardController {
         TableColumn<NoteEntry, String> elevCol = new TableColumn<>("Élève");
         elevCol.setCellValueFactory(data -> data.getValue().nomProperty());
         TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
-        deberCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
+        devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
         TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
         examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
         TableColumn<NoteEntry, Double> compCol = new TableColumn<>("Note Composition");
