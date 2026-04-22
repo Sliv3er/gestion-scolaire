@@ -310,39 +310,6 @@ public static boolean saveNote(Note note) {
         }
     }
 
-            if (exists) {
-                try (PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
-                    stmt.setDouble(1, note.getNoteDevoir() != null ? note.getNoteDevoir() : 0);
-                    stmt.setDouble(2, note.getNoteExamens() != null ? note.getNoteExamens() : 0);
-                    stmt.setDouble(3, note.getNoteComposition() != null ? note.getNoteComposition() : 0);
-                    stmt.setString(4, note.getMatriculeEnseignant());
-                    stmt.setString(5, note.getMatricule());
-                    stmt.setInt(6, note.getIdAnnee());
-                    stmt.setInt(7, note.getIdClasse());
-                    stmt.setString(8, note.getCodeMatiere());
-                    stmt.setInt(9, note.getTrimestre());
-                    return stmt.executeUpdate() > 0;
-                }
-            } else {
-                try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
-                    stmt.setString(1, note.getMatricule());
-                    stmt.setInt(2, note.getIdAnnee());
-                    stmt.setInt(3, note.getIdClasse());
-                    stmt.setString(4, note.getCodeMatiere());
-                    stmt.setInt(5, note.getTrimestre());
-                    stmt.setDouble(6, note.getNoteDevoir() != null ? note.getNoteDevoir() : 0);
-                    stmt.setDouble(7, note.getNoteExamens() != null ? note.getNoteExamens() : 0);
-                    stmt.setDouble(8, note.getNoteComposition() != null ? note.getNoteComposition() : 0);
-                    stmt.setString(9, note.getMatriculeEnseignant());
-                    return stmt.executeUpdate() > 0;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     private static Eleve extractEleve(ResultSet rs) throws SQLException {
         Eleve e = new Eleve();
         e.setMatricule(rs.getString("matricule"));
