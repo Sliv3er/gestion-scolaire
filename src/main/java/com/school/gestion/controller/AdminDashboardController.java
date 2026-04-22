@@ -488,7 +488,7 @@ TableView<NoteEntry> table = new TableView<>();
         
         TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
         devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
-        deberCol.setOnEditCommit(event -> {
+devoirCol.setOnEditCommit(event -> {
             event.getRowValue().setDevoir(event.getNewValue());
         });
         devoirCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
@@ -500,7 +500,7 @@ TableView<NoteEntry> table = new TableView<>();
         });
         examCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         
-        table.getColumns().addAll(elevCol, deberCol, examCol);
+        table.getColumns().addAll(elevCol, devoirCol, examCol);
         table.setEditable(true);
 
         Button saveBtn = new Button("Enregistrer les notes");
