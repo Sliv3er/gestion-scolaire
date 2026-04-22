@@ -486,11 +486,15 @@ public class AdminDashboardController {
         elevCol.setCellValueFactory(data -> data.getValue().nomProperty());
         TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
         devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
+        devoirCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
         examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
+        examCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         TableColumn<NoteEntry, Double> compCol = new TableColumn<>("Note Composition");
         compCol.setCellValueFactory(data -> data.getValue().compProperty().asObject());
+        compCol.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.DoubleStringConverter()));
         table.getColumns().addAll(elevCol, devoirCol, examCol, compCol);
+        table.setEditable(true);
 
         Button saveBtn = new Button("Enregistrer les notes");
         saveBtn.getStyleClass().add("btn");
