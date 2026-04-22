@@ -13,7 +13,15 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.school.gestion.database.DatabaseConnection;
+import javafx.collections.FXCollections;
 
 public class AdminDashboardController {
 
@@ -473,12 +481,32 @@ public class AdminDashboardController {
         trimestreCombo.getItems().addAll(1, 2, 3);
         trimestreCombo.setPromptText("Trimestre");
 
+        TableView<NoteEntry> table = new TableView<>();
+        TableColumn<NoteEntry, String> elevCol = new TableColumn<>("Élève");
+        elevCol.setCellValueFactory(data -> data.getValue().nomProperty());
+        TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
+        deberCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
+        TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
+        examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
+        TableColumn<NoteEntry, Double> compCol = new TableColumn<>("Note Composition");
+        compCol.setCellValueFactory(data -> data.getValue().compProperty().asObject());
+        table.getColumns().addAll(elevCol, devoirCol, examCol, compCol);
+
+        Button saveBtn = new Button("Enregistrer les notes");
+        saveBtn.getStyleClass().add("btn");
+
         niveauCombo.setOnAction(e -> {
             if (niveauCombo.getValue() != null) {
                 classeCombo.getItems().clear();
                 classeCombo.getItems().addAll(SchoolService.getClassesByNiveau(niveauCombo.getValue()));
             }
         });
+
+        classeCombo.setOnAction(e -> loadStudentsForNotes(table, classeCombo, matiereCombo, trimestreCombo));
+        matiereCombo.setOnAction(e -> loadStudentsForNotes(table, classeCombo, matiereCombo, trimestreCombo));
+        trimestreCombo.setOnAction(e -> loadStudentsForNotes(table, classeCombo, matiereCombo, trimestreCombo));
+
+        saveBtn.setOnAction(e -> saveGradesAdmin(table, classeCombo, matiereCombo, trimestreCombo));
 
         topBar.getChildren().addAll(
             new Label("Niveau:"), niveauCombo,
@@ -487,22 +515,69 @@ public class AdminDashboardController {
             new Label("Trimestre:"), trimestreCombo
         );
 
-        TableView<NoteEntry> table = new TableView<>();
-        TableColumn<NoteEntry, String> elevCol = new TableColumn<>("Élève");
-        elevCol.setCellValueFactory(data -> data.getValue().nomProperty());
-        TableColumn<NoteEntry, Double> devoirCol = new TableColumn<>("Note Devoir");
-        devoirCol.setCellValueFactory(data -> data.getValue().devoirProperty().asObject());
-        TableColumn<NoteEntry, Double> examCol = new TableColumn<>("Note Examen");
-        examCol.setCellValueFactory(data -> data.getValue().examProperty().asObject());
-        TableColumn<NoteEntry, Double> compCol = new TableColumn<>("Note Composition");
-        compCol.setCellValueFactory(data -> data.getValue().compProperty().asObject());
-        table.getColumns().addAll(elevCol, devoirCol, examCol, compCol);
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.getStyleClass().add("btn");
-
         box.getChildren().addAll(topBar, table, saveBtn);
         contentArea.getChildren().setAll(box);
+    }
+
+    private void loadStudentsForNotes(TableView<NoteEntry> table, ComboBox<Classe> classeCombo, ComboBox<Matiere> matiereCombo, ComboBox<Integer> trimestreCombo) {
+        if (classeCombo.getValue() == null || matiereCombo.getValue() == null || trimestreCombo.getValue() == null) {
+            return;
+        }
+        
+        AnneeScolaire annee = SchoolService.getActiveAnneeScolaire();
+        if (annee == null) return;
+
+        List<NoteEntry> entries = new ArrayList<>();
+        String query = "SELECT e.matricule, e.nom, e.prenom, n.noteDevoir, n.noteExamens, n.noteComposition " +
+                      "FROM ELEVE e " +
+                      "JOIN INSCRIPTION i ON e.matricule = i.matricule " +
+                      "LEFT JOIN NOTE n ON e.matricule = n.matricule AND n.idClasse = i.idClasse AND n.codeMatiere = ? AND n.trimestre = ? " +
+                      "WHERE i.idClasse = ? AND i.idAnnee = ? AND i.statut = 'ACTIF'";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, matiereCombo.getValue().getCode());
+            stmt.setInt(2, trimestreCombo.getValue());
+            stmt.setInt(3, classeCombo.getValue().getIdClasse());
+            stmt.setInt(4, annee.getIdAnnee());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                NoteEntry entry = new NoteEntry(rs.getString("prenom") + " " + rs.getString("nom"));
+                if (rs.getObject("noteDevoir") != null) entry.setDevoir(rs.getDouble("noteDevoir"));
+                if (rs.getObject("noteExamens") != null) entry.setExam(rs.getDouble("noteExamens"));
+                if (rs.getObject("noteComposition") != null) entry.setComp(rs.getDouble("noteComposition"));
+                entry.setMatricule(rs.getString("matricule"));
+                entries.add(entry);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        table.setItems(FXCollections.observableArrayList(entries));
+    }
+
+    private void saveGradesAdmin(TableView<NoteEntry> table, ComboBox<Classe> classeCombo, ComboBox<Matiere> matiereCombo, ComboBox<Integer> trimestreCombo) {
+        if (classeCombo.getValue() == null || matiereCombo.getValue() == null || trimestreCombo.getValue() == null) {
+            AlertUtils.showError("Erreur", "Veuillez sélectionner tous les champs");
+            return;
+        }
+
+        AnneeScolaire annee = SchoolService.getActiveAnneeScolaire();
+        if (annee == null) {
+            AlertUtils.showError("Erreur", "Aucune année scolaire active");
+            return;
+        }
+
+        int saved = 0;
+        for (NoteEntry entry : table.getItems()) {
+            Note note = new Note(entry.getMatricule(), annee.getIdAnnee(), classeCombo.getValue().getIdClasse(),
+                                matiereCombo.getValue().getCode(), trimestreCombo.getValue());
+            note.setMatriculeEnseignant(SessionManager.getCurrentUser().getUsername());
+            note.setNoteDevoir(entry.getDevoir());
+            note.setNoteExamens(entry.getExam());
+            note.setNoteComposition(entry.getComp());
+            if (SchoolService.saveNote(note)) saved++;
+        }
+        AlertUtils.showInfo("Succès", saved + " note(s) enregistrée(s)");
     }
 
     private void showBulletinsView() {
@@ -646,13 +721,17 @@ public class AdminDashboardController {
     }
 
     public static class NoteEntry {
-        private final String nom;
+        private String nom;
+        private String matricule;
         private final javafx.beans.property.DoubleProperty devoir = new javafx.beans.property.SimpleDoubleProperty();
         private final javafx.beans.property.DoubleProperty exam = new javafx.beans.property.SimpleDoubleProperty();
         private final javafx.beans.property.DoubleProperty comp = new javafx.beans.property.SimpleDoubleProperty();
 
         public NoteEntry(String nom) { this.nom = nom; }
         public String getNom() { return nom; }
+        public void setNom(String nom) { this.nom = nom; }
+        public String getMatricule() { return matricule; }
+        public void setMatricule(String matricule) { this.matricule = matricule; }
         public javafx.beans.property.StringProperty nomProperty() { return new javafx.beans.property.SimpleStringProperty(nom); }
         public double getDevoir() { return devoir.get(); }
         public void setDevoir(double v) { devoir.set(v); }
