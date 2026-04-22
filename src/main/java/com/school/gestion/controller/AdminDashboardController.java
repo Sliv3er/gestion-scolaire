@@ -533,24 +533,27 @@ TableView<NoteEntry> table = new TableView<>();
         if (annee == null) return;
 
         List<NoteEntry> entries = new ArrayList<>();
-        String query = "SELECT e.matricule, e.nom, e.prenom, n.noteDevoir, n.noteExamens, n.noteComposition " +
+        int selectedClasseId = classeCombo.getValue().getIdClasse();
+        String query = "SELECT e.matricule, e.nom, e.prenom, n.noteDevoir, n.noteExamens " +
                       "FROM ELEVE e " +
                       "JOIN INSCRIPTION i ON e.matricule = i.matricule " +
-                      "LEFT JOIN NOTE n ON e.matricule = n.matricule AND n.idClasse = i.idClasse AND n.codeMatiere = ? AND n.trimestre = ? " +
+                      "LEFT JOIN NOTE n ON e.matricule = n.matricule AND n.idClasse = ? AND n.codeMatiere = ? AND n.trimestre = ? " +
                       "WHERE i.idClasse = ? AND i.idAnnee = ? AND i.statut = 'ACTIF'";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, matiereCombo.getValue().getCode());
-            stmt.setInt(2, trimestreCombo.getValue());
-            stmt.setInt(3, classeCombo.getValue().getIdClasse());
-            stmt.setInt(4, annee.getIdAnnee());
+            stmt.setInt(1, selectedClasseId);
+            stmt.setString(2, matiereCombo.getValue().getCode());
+            stmt.setInt(3, trimestreCombo.getValue());
+            stmt.setInt(4, selectedClasseId);
+            stmt.setInt(5, annee.getIdAnnee());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 NoteEntry entry = new NoteEntry(rs.getString("prenom") + " " + rs.getString("nom"));
-                if (rs.getObject("noteDevoir") != null) entry.setDevoir(rs.getDouble("noteDevoir"));
-                if (rs.getObject("noteExamens") != null) entry.setExam(rs.getDouble("noteExamens"));
-                if (rs.getObject("noteComposition") != null) entry.setComp(rs.getDouble("noteComposition"));
+                Double dev = rs.getObject("noteDevoir") != null ? rs.getDouble("noteDevoir") : 0.0;
+                Double ex = rs.getObject("noteExamens") != null ? rs.getDouble("noteExamens") : 0.0;
+                entry.setDevoir(dev);
+                entry.setExam(ex);
                 entry.setMatricule(rs.getString("matricule"));
                 entries.add(entry);
             }
@@ -574,6 +577,8 @@ TableView<NoteEntry> table = new TableView<>();
 
         int saved = 0;
         for (NoteEntry entry : table.getItems()) {
+            if (entry.getMatricule() == null || entry.getMatricule().isEmpty()) continue;
+            
             Note note = new Note();
             note.setMatricule(entry.getMatricule());
             note.setIdAnnee(annee.getIdAnnee());
@@ -738,9 +743,9 @@ TableView<NoteEntry> table = new TableView<>();
     public static class NoteEntry {
         private String nom;
         private String matricule;
-        private final javafx.beans.property.DoubleProperty devoir = new javafx.beans.property.SimpleDoubleProperty();
-        private final javafx.beans.property.DoubleProperty exam = new javafx.beans.property.SimpleDoubleProperty();
-        private final javafx.beans.property.DoubleProperty comp = new javafx.beans.property.SimpleDoubleProperty();
+        private Double devoir = 0.0;
+        private Double exam = 0.0;
+        private Double comp = 0.0;
 
         public NoteEntry(String nom) { this.nom = nom; }
         public String getNom() { return nom; }
@@ -748,14 +753,20 @@ TableView<NoteEntry> table = new TableView<>();
         public String getMatricule() { return matricule; }
         public void setMatricule(String matricule) { this.matricule = matricule; }
         public javafx.beans.property.StringProperty nomProperty() { return new javafx.beans.property.SimpleStringProperty(nom); }
-        public double getDevoir() { return devoir.get(); }
-        public void setDevoir(double v) { devoir.set(v); }
-        public javafx.beans.property.DoubleProperty devoirProperty() { return devoir; }
-        public double getExam() { return exam.get(); }
-        public void setExam(double v) { exam.set(v); }
-        public javafx.beans.property.DoubleProperty examProperty() { return exam; }
-        public double getComp() { return comp.get(); }
-        public void setComp(double v) { comp.set(v); }
-        public javafx.beans.property.DoubleProperty compProperty() { return comp; }
+        public Double getDevoir() { return devoir; }
+        public void setDevoir(Double v) { this.devoir = v != null ? v : 0.0; }
+        public javafx.beans.property.DoubleProperty devoirProperty() { 
+            return new javafx.beans.property.SimpleDoubleProperty(devoir != null ? devoir : 0.0); 
+        }
+        public Double getExam() { return exam; }
+        public void setExam(Double v) { this.exam = v != null ? v : 0.0; }
+        public javafx.beans.property.DoubleProperty examProperty() { 
+            return new javafx.beans.property.SimpleDoubleProperty(exam != null ? exam : 0.0); 
+        }
+        public Double getComp() { return comp; }
+        public void setComp(Double v) { this.comp = v != null ? v : 0.0; }
+        public javafx.beans.property.DoubleProperty compProperty() { 
+            return new javafx.beans.property.SimpleDoubleProperty(comp != null ? comp : 0.0); 
+        }
     }
 }

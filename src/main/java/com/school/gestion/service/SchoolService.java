@@ -287,22 +287,28 @@ public class SchoolService {
         return notes;
     }
 
-    public static boolean saveNote(Note note) {
-        String checkQuery = "SELECT idNote FROM NOTE WHERE matricule = ? AND idAnnee = ? AND idClasse = ? AND codeMatiere = ? AND trimestre = ?";
-        String updateQuery = "UPDATE NOTE SET noteDevoir = ?, noteExamens = ?, noteComposition = ?, matriculeEnseignant = ?, dateSaisie = CURRENT_DATE WHERE matricule = ? AND idAnnee = ? AND idClasse = ? AND codeMatiere = ? AND trimestre = ?";
-        String insertQuery = "INSERT INTO NOTE (matricule, idAnnee, idClasse, codeMatiere, trimestre, noteDevoir, noteExamens, noteComposition, matriculeEnseignant) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+public static boolean saveNote(Note note) {
+        String query = "INSERT INTO NOTE (matricule, idAnnee, idClasse, codeMatiere, trimestre, noteDevoir, noteExamens, noteComposition, matriculeEnseignant) " +
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                      "ON DUPLICATE KEY UPDATE noteDevoir = VALUES(noteDevoir), noteExamens = VALUES(noteExamens), noteComposition = VALUES(noteComposition), matriculeEnseignant = VALUES(matriculeEnseignant), dateSaisie = CURRENT_DATE";
         
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            boolean exists = false;
-            try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-                checkStmt.setString(1, note.getMatricule());
-                checkStmt.setInt(2, note.getIdAnnee());
-                checkStmt.setInt(3, note.getIdClasse());
-                checkStmt.setString(4, note.getCodeMatiere());
-                checkStmt.setInt(5, note.getTrimestre());
-                ResultSet rs = checkStmt.executeQuery();
-                exists = rs.next();
-            }
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, note.getMatricule());
+            stmt.setInt(2, note.getIdAnnee());
+            stmt.setInt(3, note.getIdClasse());
+            stmt.setString(4, note.getCodeMatiere());
+            stmt.setInt(5, note.getTrimestre());
+            stmt.setDouble(6, note.getNoteDevoir() != null ? note.getNoteDevoir() : 0);
+            stmt.setDouble(7, note.getNoteExamens() != null ? note.getNoteExamens() : 0);
+            stmt.setDouble(8, note.getNoteComposition() != null ? note.getNoteComposition() : 0);
+            stmt.setString(9, note.getMatriculeEnseignant());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
             if (exists) {
                 try (PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
