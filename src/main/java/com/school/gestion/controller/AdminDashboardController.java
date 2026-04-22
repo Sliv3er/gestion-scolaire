@@ -157,6 +157,7 @@ public class AdminDashboardController {
         HBox topBar = new HBox(10);
         Button addBtn = new Button("Ajouter un enseignant");
         addBtn.getStyleClass().add("btn");
+        addBtn.setOnAction(e -> showAddEnseignantDialog());
         topBar.getChildren().addAll(addBtn);
 
         TableView<Enseignant> table = new TableView<>();
@@ -180,6 +181,7 @@ public class AdminDashboardController {
         niveauCombo.setPromptText("Sélectionner un niveau");
         Button addBtn = new Button("Ajouter une classe");
         addBtn.getStyleClass().add("btn");
+        addBtn.setOnAction(e -> showAddClasseDialog(niveauCombo.getValue()));
         topBar.getChildren().addAll(new Label("Niveau:"), niveauCombo, addBtn);
 
         GridPane grid = new GridPane();
@@ -188,6 +190,7 @@ public class AdminDashboardController {
 
         niveauCombo.setOnAction(e -> {
             if (niveauCombo.getValue() != null) {
+                addBtn.setOnAction(ev -> showAddClasseDialog(niveauCombo.getValue()));
                 List<Classe> classes = SchoolService.getClassesByNiveau(niveauCombo.getValue());
                 grid.getChildren().clear();
                 int col = 0, row = 0;
@@ -202,6 +205,52 @@ public class AdminDashboardController {
 
         box.getChildren().addAll(topBar, grid);
         contentArea.getChildren().setAll(box);
+    }
+
+    private void showAddClasseDialog(String niveauDefaut) {
+        Dialog<Classe> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter une classe");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        TextField nom = new TextField();
+        TextField capacite = new TextField();
+        capacite.setText("20");
+        ComboBox<String> niveauCombo = new ComboBox<>();
+        niveauCombo.getItems().addAll(SchoolService.getAllNiveaux());
+        niveauCombo.setValue(niveauDefaut);
+
+        grid.add(new Label("Nom de la classe:"), 0, 0); grid.add(nom, 1, 0);
+        grid.add(new Label("Niveau:"), 0, 1); grid.add(niveauCombo, 1, 1);
+        grid.add(new Label("Capacité (max 20):"), 0, 2); grid.add(capacite, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(bt -> {
+            if (bt == ButtonType.OK) {
+                Classe c = new Classe();
+                c.setNom(nom.getText());
+                c.setNiveau(niveauCombo.getValue());
+                try {
+                    c.setCapacite(Integer.parseInt(capacite.getText()));
+                } catch (NumberFormatException ex) {
+                    c.setCapacite(20);
+                }
+                return c;
+            }
+            return null;
+        });
+
+        var result = dialog.showAndWait();
+        result.ifPresent(classe -> {
+            if (SchoolService.saveClasse(classe)) {
+                AlertUtils.showInfo("Succès", "Classe ajoutée avec succès");
+                navigateToClasses();
+            } else {
+                AlertUtils.showError("Erreur", "Impossible d'ajouter la classe");
+            }
+        });
     }
 
     private VBox createClasseCard(Classe classe) {
@@ -455,6 +504,54 @@ public class AdminDashboardController {
                 navigateToEleves();
             } else {
                 AlertUtils.showError("Erreur", "Impossible d'ajouter l'élève");
+            }
+        });
+    }
+
+    private void showAddEnseignantDialog() {
+        Dialog<Enseignant> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter un enseignant");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        TextField matricule = new TextField(), nom = new TextField(), prenom = new TextField(), telephone = new TextField(), grade = new TextField();
+        DatePicker dob = new DatePicker();
+        ComboBox<String> sexeCombo = new ComboBox<>();
+        sexeCombo.getItems().addAll("M", "F");
+
+        grid.add(new Label("Matricule:"), 0, 0); grid.add(matricule, 1, 0);
+        grid.add(new Label("Nom:"), 0, 1); grid.add(nom, 1, 1);
+        grid.add(new Label("Prénom:"), 0, 2); grid.add(prenom, 1, 2);
+        grid.add(new Label("Date naissance:"), 0, 3); grid.add(dob, 1, 3);
+        grid.add(new Label("Sexe:"), 0, 4); grid.add(sexeCombo, 1, 4);
+        grid.add(new Label("Téléphone:"), 0, 5); grid.add(telephone, 1, 5);
+        grid.add(new Label("Grade:"), 0, 6); grid.add(grade, 1, 6);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(bt -> {
+            if (bt == ButtonType.OK) {
+                Enseignant en = new Enseignant();
+                en.setMatricule(matricule.getText());
+                en.setNom(nom.getText());
+                en.setPrenom(prenom.getText());
+                en.setDateNaissance(dob.getValue());
+                en.setSexe(sexeCombo.getValue());
+                en.setTelephone(telephone.getText());
+                en.setGrade(grade.getText());
+                return en;
+            }
+            return null;
+        });
+
+        var result = dialog.showAndWait();
+        result.ifPresent(enseignant -> {
+            if (SchoolService.saveEnseignant(enseignant)) {
+                AlertUtils.showInfo("Succès", "Enseignant ajouté avec succès");
+                navigateToEnseignants();
+            } else {
+                AlertUtils.showError("Erreur", "Impossible d'ajouter l'enseignant");
             }
         });
     }
